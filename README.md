@@ -14,7 +14,7 @@ Application Features
 
 User Model
 
-* id (uuid)
+* id
 * name
 * email
 * phone number
