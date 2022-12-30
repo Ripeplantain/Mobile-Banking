@@ -2,6 +2,7 @@ This project is an attempt to simulate the mobile money banking
 
 Application Features
 
+* Authentication with sms verification
 * Send Money
 * Withdraw Money
 * My account details
@@ -25,7 +26,7 @@ User Model
 
 Account Model
 
-* id(uuid)
+* id
 * user -> Foreign Key to User Model
 * account_balance
 * created
@@ -33,7 +34,7 @@ Account Model
 
 Transaction Model
 
-* id(uuid)
+* id
 * amount
 * user -> Foreign Key to User Model
 * created
@@ -41,7 +42,7 @@ Transaction Model
 
 Loan Model
 
-* id(uuid)
+* id
 * amount
 * user -> Foreign Key to User Model
 * Account -> Foreign Key to Account Model
