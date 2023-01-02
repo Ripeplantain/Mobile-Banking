@@ -5,3 +5,5 @@ PyJWT
 django-cors-headers
 twilio
 python-dotenv
+django-two-factor-auth
+phonenumbers
