@@ -45,6 +45,7 @@ class VerifyOtp(APIView):
                 otp = serializer.data['otp']
 
                 user = User.objects.filter(email=email)
+
                 if not user.exists():
                     return Response({
                     'status':400,
@@ -59,8 +60,17 @@ class VerifyOtp(APIView):
                         'data':'wrong otp'
                     })
 
-                user[0].isVerified = True
-                user[0].save()
+                if user[0].isVerified == True:
+                    return Response({
+                        'status':400,
+                        'message':'You are already verified',
+                        'data':{}
+                    })
+
+                user = user.first()
+
+                user.isVerified = True
+                user.save()
 
                 return Response({
                     'status':200,
