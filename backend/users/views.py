@@ -1,11 +1,12 @@
-# from django.shortcuts import render
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework.exceptions import AuthenticationFailed
+# from rest_framework.exceptions import AuthenticationFailed
+from django.contrib.auth import authenticate
+from rest_framework_simplejwt.tokens import RefreshToken
 
 import jwt, datetime
 
-from .serializers import UserSerializer, VerifyAccountSerializer
+from .serializers import UserSerializer, VerifyAccountSerializer, LoginSerializer
 from .models import User
 
 from .email import *
@@ -81,40 +82,49 @@ class VerifyOtp(APIView):
         except Exception as e:
             print(e)
 
+
 class LoginView(APIView):
-    """Class based view for login"""
-
+    
     def post(self, request):
-        email = request.data['email']
-        password = request.data['password']
+        try:
+            data = request.data
+            serializer = LoginSerializer(data=data)
+            if serializer.is_valid():
+                email = serializer.data['email']
+                password = serializer.data['password']
 
-        user = User.objects.filter(email=email)
+                user = authenticate(email=email, password=password)
 
-        if user[0].isVerified == False:
-            raise AssertionError('Verify your email')
+                if user is None:
+                    return Response({
+                        'status':400,
+                        'message':'Wrong Username or Password',
+                        'data':{}
+                    })
 
-        user = user.first()
+                if user.isVerified is False:
+                    return Response({
+                        'status':400,
+                        'message':'You have not verified your account',
+                        'data':{}
+                    })
 
-        if user is None:
-            raise AuthenticationFailed('User not found')
 
-        if not user.check_password(password):
-            raise AuthenticationFailed('Invalid password')
+                refresh = RefreshToken.for_user(user)
+                
+                return Response({
+                    'refresh': str(refresh),
+                    'access': str(refresh.access_token),
+                })
 
-        payload = {
-            'id':user.id,
-            'exp':datetime.datetime.utcnow() + datetime.timedelta(minutes=60),
-            'iat':datetime.datetime.utcnow()
-        }
+            return Response({
+                    'status':400,
+                    'message':'You are already verified',
+                    'data':{}
+                })
 
-        token = jwt.encode(payload, 'secret', algorithm='HS256')
-
-        response = Response()
-        response.set_cookie(key='jwt', value=token, httponly=True)
-        response.data = {
-            'jwt':token,
-        }
-        return response
+        except Exception as e:
+            print(e)
 
 class LogoutView(APIView):
     """Class base view for logout"""
