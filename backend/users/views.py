@@ -1,10 +1,9 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
-# from rest_framework.exceptions import AuthenticationFailed
 from django.contrib.auth import authenticate
 from rest_framework_simplejwt.tokens import RefreshToken
 
-import jwt, datetime
+from datetime import datetime
 
 from .serializers import UserSerializer, VerifyAccountSerializer, LoginSerializer
 from .models import User
@@ -109,6 +108,8 @@ class LoginView(APIView):
                         'data':{}
                     })
 
+                user.last_login = datetime.now()
+                user.save()
 
                 refresh = RefreshToken.for_user(user)
                 
@@ -117,9 +118,10 @@ class LoginView(APIView):
                     'access': str(refresh.access_token),
                 })
 
+
             return Response({
                     'status':400,
-                    'message':'You are already verified',
+                    'message':'Wrong info entered',
                     'data':{}
                 })
 
