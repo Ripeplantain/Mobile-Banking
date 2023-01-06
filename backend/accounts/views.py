@@ -1,6 +1,4 @@
 from rest_framework import generics, permissions
-# from rest_framework.views import APIView
-from rest_framework.response import Response
 
 from .serializers import AccountSerializer
 from .models import Account
@@ -19,6 +17,8 @@ class AccountCreateView(generics.CreateAPIView):
         user = User.objects.get(pk=self.request.user.id)
         serializer.save(user=user)
 
-class AccountListView(generics.ListAPIView):
+class AccountDetailView(generics.RetrieveAPIView):
     queryset = Account.objects.all()
     serializer_class = AccountSerializer
+    lookup_field = 'pk'
+    permission_classes = (permissions.IsAuthenticated,)
