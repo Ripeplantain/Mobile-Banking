@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'users',
     'accounts',
+    'transaction',
     'corsheaders',
     'rest_framework_simplejwt',
 ]
