@@ -40,8 +40,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',
     'users',
-    'accounts',
-    'transaction',
+    'account',
     'corsheaders',
     'rest_framework_simplejwt',
 ]
@@ -54,7 +53,7 @@ REST_FRAMEWORK = {
 
 
 SIMPLE_JWT = {
-    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=30),
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=60),
     'REFRESH_TOKEN_LIFETIME': timedelta(days=1),
     'ROTATE_REFRESH_TOKENS': False,
     'BLACKLIST_AFTER_ROTATION': False,
@@ -124,7 +123,7 @@ WSGI_APPLICATION = 'banking.wsgi.application'
 DATABASES = {
     'default': {
     'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'banking_db',
+        'NAME': 'bank',
         'USER': 'developer',
         'PASSWORD': 'password',
         'HOST':'localhost',

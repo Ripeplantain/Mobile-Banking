@@ -29,7 +29,8 @@ class RegisterView(APIView):
             'status':400,
             'message':'something went wrong',
             'data':serializer.errors
-        })
+       })
+
 class VerifyOtp(APIView):
 
     def post(self, request):
@@ -64,6 +65,7 @@ class VerifyOtp(APIView):
             user = user.first()
 
             user.isVerified = True
+            user.balance = 1000.00
             user.save()
 
             return Response({
