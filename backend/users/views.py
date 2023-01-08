@@ -2,6 +2,8 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from django.contrib.auth import authenticate
 from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework.permissions import IsAuthenticated, AllowAny
+
 
 from datetime import datetime
 
@@ -134,6 +136,8 @@ class LogoutView(APIView):
 class RequestResetView(APIView):
     """Class based view for reset password request."""
 
+    permission_classes = (AllowAny,)
+
     def post(self, request):
         serializer = PasswordViewSerializer(data=request.data)
         if serializer.is_valid(raise_exception=True):
@@ -146,6 +150,8 @@ class RequestResetView(APIView):
 
 class PasswordResetView(APIView):
     """Class based view for reset password"""
+
+    permission_classes = (AllowAny,)
 
     def post(self, request):
         serializer = PasswordResetSerializer(data=request.data)
@@ -177,4 +183,34 @@ class PasswordResetView(APIView):
             return Response(
                 {"message": "Your password has been reset"},
                 status=200
+            )
+
+
+class ResetPinView(APIView):
+    """This view is used to reset view"""
+
+    permission_classes = (IsAuthenticated,)
+
+    def post(self, request):
+        user = User.objects.filter(email=request.user.email)
+        
+        if not user.exists():
+            return Response(
+                {"message": "Invalid Email"},
+                status=400
+            )
+
+        user = user.first()
+
+        try:
+            user.pin =request.data['pin']
+            user.save()
+            return Response({
+                "message":"Your PIN was successfully reset"
+            },status=200)
+
+        except Exception as e:
+            return Response(
+                {"message":"Pin should not be more than 9999 and less than 1000"},
+                status=400
             )
