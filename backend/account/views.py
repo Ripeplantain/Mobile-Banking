@@ -2,23 +2,40 @@ from rest_framework import generics
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
-from django.db import IntegrityError, transaction
+from django.db import transaction
+from django.http import Http404
 
 from users.serializers import UserSerializer
 from .serializer import TransferSerializer
+from .models import TransferHistory
 from users.models import User
 
 from decimal import Decimal
 
-# Create your views here.
-class UserDetailsView(generics.RetrieveAPIView):
-    queryset = User.objects.all()
-    serializer_class = UserSerializer
+
+class UserDetailsView(APIView):
+    """
+    This view is used to show user account details
+    """
+
     permission_classes = (IsAuthenticated,)
-    lookup_field = 'pk'
+
+    def get_object(self, pk):
+        try:
+            return User.objects.get(pk=pk)
+        except User.DoesNotExist:
+            raise Http404
+
+    def get(self, request, pk, format=None):
+        history = self.get_object(pk)
+        serializer = UserSerializer(history)
+        return Response(serializer.data)
 
 
 class TransferView(APIView):
+    """
+        This view is used for transferring money from one user to another.
+    """
 
     permission_classes = (IsAuthenticated,)
 
@@ -56,3 +73,22 @@ class TransferView(APIView):
                     return Response({
                         "error": "Receiver does not exist"
                     })
+
+
+class TransferHistoryView(APIView):
+    """
+    This view is used to show transfer history of user
+    """
+
+    permission_classes = (IsAuthenticated,)
+
+    def get_object(self, pk):
+        try:
+            return TransferHistory.objects.get(pk=pk)
+        except TransferHistory.DoesNotExist:
+            raise Http404
+
+    def get(self, request, pk, format=None):
+        history = self.get_object(pk)
+        serializer = TransferSerializer(history)
+        return Response(serializer.data)
