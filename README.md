@@ -4,7 +4,9 @@ Application Features
 
 * Authentication with email verification *
 * Send Money *
-* Withdraw Money
+* Withdraw Money*
+* view transfer history*
+* view withdraw history*
 * My account details *
 * Reset Password
 * Reset Pin

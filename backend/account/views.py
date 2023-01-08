@@ -7,7 +7,7 @@ from django.http import Http404
 
 from users.serializers import UserSerializer
 from .serializer import TransferSerializer, WithdrawSerializer
-from .models import TransferHistory
+from .models import TransferHistory, WithdrawHistory
 from users.models import User
 
 from decimal import Decimal
@@ -83,15 +83,9 @@ class TransferHistoryView(APIView):
 
     permission_classes = (IsAuthenticated,)
 
-    def get_object(self, pk):
-        try:
-            return TransferHistory.objects.get(pk=pk)
-        except TransferHistory.DoesNotExist:
-            raise Http404
-
-    def get(self, request, pk, format=None):
-        history = self.get_object(pk)
-        serializer = TransferSerializer(history)
+    def get(self, request, sender, format=None):
+        snippets = TransferHistory.objects.filter(sender=sender)
+        serializer = TransferSerializer(snippets, many=True)
         return Response(serializer.data)
 
 
@@ -129,3 +123,16 @@ class WithdrawView(APIView):
                         serializer.data,
                         status=200
                     )
+
+
+class WithdrawHistoryView(APIView):
+    """
+    This view is used to show withdraw history of user
+    """
+
+    permission_classes = (IsAuthenticated,)
+
+    def get(self, request, user, format=None):
+        snippets = WithdrawHistory.objects.filter(user=user)
+        serializer = WithdrawSerializer(snippets, many=True)
+        return Response(serializer.data)
