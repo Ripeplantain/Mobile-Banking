@@ -6,6 +6,7 @@ from django.contrib.auth.models import AbstractUser
 class User(AbstractUser):
     email = models.EmailField(max_length=255,unique=True)
     isVerified = models.BooleanField(default=False)
+    recovery_otp = models.CharField(max_length=6,null=True, blank=True)
     otp = models.CharField(max_length=6,null=True,blank=True)
     phonenumber = models.CharField(max_length=255,unique=True,null=True)
     pin = models.CharField(max_length=6,null=True)
