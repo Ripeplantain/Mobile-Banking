@@ -6,7 +6,7 @@ from django.db import transaction
 from django.http import Http404
 
 from users.serializers import UserSerializer
-from .serializer import TransferSerializer
+from .serializer import TransferSerializer, WithdrawSerializer
 from .models import TransferHistory
 from users.models import User
 
@@ -41,7 +41,7 @@ class TransferView(APIView):
 
     def post(self, request):
 
-        request.data['sender_id'] = self.request.user.id
+        # request.data['sender_id'] = self.request.user.id
 
         serializer = TransferSerializer(data=request.data,context={'request':request})
         if serializer.is_valid(raise_exception=True):
@@ -103,12 +103,29 @@ class WithdrawView(APIView):
     permission_classes = (IsAuthenticated,)
 
     def post(self, request):
-        request.data['user'] = self.request.user.id
+        # request.data['user'] = self.request.user.id
 
-        serializer = TransferSerializer(data=request.data)
+        serializer = WithdrawSerializer(data=request.data,context={'request': request})
         if serializer.is_valid(raise_exception=True):
             with transaction.atomic():
                 user = User.objects.select_for_update().filter(id=request.user.id).first()
+                
+                if user.pin != request.data['pin']:
+                    return Response({
+                        "error": "Wrong pin"
+                    },status=403)
 
                 if serializer._validated_data.get('amount') > user.balance:
-                    pass
+                    return  Response(
+                        status=400,
+                        data={'message': 'Insufficient balance.'}
+                    )
+                else:
+                    user.balance -= Decimal(serializer._validated_data.get('amount'))
+                    user.save()
+
+                    serializer.save()
+                    return Response(
+                        serializer.data,
+                        status=200
+                    )

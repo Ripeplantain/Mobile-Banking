@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from .models import TransferHistory
+from .models import TransferHistory, WithdrawHistory
 from users.serializers import UserSerializer
 
 class TransferSerializer(serializers.ModelSerializer):
@@ -21,5 +21,10 @@ class WithdrawSerializer(serializers.ModelSerializer):
 
     user = UserSerializer(read_only=True)
     class Meta:
-        model = TransferHistory
+        model = WithdrawHistory
         fields = '__all__'
+
+    def create(self, validated_data):
+        user = self.context['request'].user
+        validated_data['user_id'] = user.id
+        return WithdrawHistory.objects.create(**validated_data)
