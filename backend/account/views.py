@@ -23,22 +23,26 @@ class TransferView(APIView):
     permission_classes = (IsAuthenticated,)
 
     def post(self, request):
+
+        request.data['sender'] = self.request.user.id
+
         serializer = TransferSerializer(data=request.data)
         if serializer.is_valid(raise_exception=True):
             with transaction.atomic():
-                receiver = User.objects.select_for_update().filter(phonenumber=serializer.data['receiver'])
+                receiver = User.objects.select_for_update().filter(phonenumber=serializer.validated_data.get('receiver'))
                 sender = User.objects.select_for_update().filter(id=request.user.id).first()
                 if receiver.exists():
                     receiver = receiver.get()
                     if sender.pin == request.data['pin']:
-                        if float(serializer.data['amount']) < sender.balance:
-                                receiver.balance += Decimal(serializer.data['amount'])
+                        if float(serializer.validated_data.get('amount')) < sender.balance:
+                                receiver.balance += Decimal(serializer.validated_data.get('amount'))
                                 receiver.save()
 
-                                sender.balance -= Decimal(serializer.data['amount'])
+                                sender.balance -= Decimal(serializer.validated_data.get('amount'))
                                 sender.save()
-
-                                return Response(status=200)
+                                
+                                serializer.save()
+                                return Response(serializer.data, status=200)    
                         else:
                             return Response(
                                 status=400,
