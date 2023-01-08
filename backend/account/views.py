@@ -41,17 +41,18 @@ class TransferView(APIView):
 
     def post(self, request):
 
-        request.data['sender'] = self.request.user.id
+        request.data['sender_id'] = self.request.user.id
 
-        serializer = TransferSerializer(data=request.data)
+        serializer = TransferSerializer(data=request.data,context={'request':request})
         if serializer.is_valid(raise_exception=True):
+
             with transaction.atomic():
                 receiver = User.objects.select_for_update().filter(phonenumber=serializer.validated_data.get('receiver'))
                 sender = User.objects.select_for_update().filter(id=request.user.id).first()
                 if receiver.exists():
                     receiver = receiver.get()
                     if sender.pin == request.data['pin']:
-                        if float(serializer.validated_data.get('amount')) < sender.balance:
+                        if Decimal(serializer.validated_data.get('amount')) < sender.balance:
                                 receiver.balance += Decimal(serializer.validated_data.get('amount'))
                                 receiver.save()
 
@@ -92,3 +93,22 @@ class TransferHistoryView(APIView):
         history = self.get_object(pk)
         serializer = TransferSerializer(history)
         return Response(serializer.data)
+
+
+class WithdrawView(APIView):
+    """
+    This view is used to withdraw money from account
+    """
+
+    permission_classes = (IsAuthenticated,)
+
+    def post(self, request):
+        request.data['user'] = self.request.user.id
+
+        serializer = TransferSerializer(data=request.data)
+        if serializer.is_valid(raise_exception=True):
+            with transaction.atomic():
+                user = User.objects.select_for_update().filter(id=request.user.id).first()
+
+                if serializer._validated_data.get('amount') > user.balance:
+                    pass
