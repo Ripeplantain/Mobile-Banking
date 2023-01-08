@@ -26,3 +26,12 @@ class VerifyAccountSerializer(serializers.Serializer):
 class LoginSerializer(serializers.Serializer):
     email = serializers.EmailField()
     password = serializers.CharField()
+
+class PasswordViewSerializer(serializers.Serializer):
+    email = serializers.EmailField()
+    # password = serializers.CharField()
+
+class PasswordResetSerializer(serializers.Serializer):
+    email = serializers.EmailField()
+    password = serializers.CharField()
+    recovery_otp = serializers.CharField()

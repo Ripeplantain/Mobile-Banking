@@ -5,7 +5,7 @@ from rest_framework_simplejwt.tokens import RefreshToken
 
 from datetime import datetime
 
-from .serializers import UserSerializer, VerifyAccountSerializer, LoginSerializer
+from .serializers import UserSerializer, VerifyAccountSerializer, LoginSerializer, PasswordViewSerializer, PasswordResetSerializer
 from .models import User
 
 from .email import *
@@ -129,3 +129,52 @@ class LogoutView(APIView):
             "message":"you are logged out",
         }
         return response
+
+
+class RequestResetView(APIView):
+    """Class based view for reset password request."""
+
+    def post(self, request):
+        serializer = PasswordViewSerializer(data=request.data)
+        if serializer.is_valid(raise_exception=True):
+            email = serializer.validated_data["email"]
+
+            return Response(
+                {"message":"Check email to reset your password"},
+                status=200
+            )
+
+class PasswordResetView(APIView):
+    """Class based view for reset password"""
+
+    def post(self, request):
+        serializer = PasswordResetSerializer(data=request.data)
+        if serializer.is_valid(raise_exception=True):
+            email = serializer.validated_data["email"]
+            password = serializer.validated_data["password"]
+            recovery_otp = serializer.validated_data["recovery_otp"]
+
+            user = User.objects.filter(email=email)
+
+            if not user.exists():
+                return Response(
+                    {"message": "Invalid Email"},
+                    status=400
+                )
+
+            if user[0].recovery_otp != recovery_otp:
+                return Response(
+                    {"message": "Invalid OTP"},
+                    status=400
+                )
+
+            user = user.first()
+
+            user.set_password(password)
+            user.recovery_otp = None
+            user.save()
+
+            return Response(
+                {"message": "Your password has been reset"},
+                status=200
+            )
