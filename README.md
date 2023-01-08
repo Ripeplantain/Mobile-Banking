@@ -2,12 +2,14 @@ This project is an attempt to simulate the mobile money banking
 
 Application Features
 
-* Authentication with email verification
+* Authentication with email verification *
 * Send Money
 * Withdraw Money
-* My account details
+* My account details *
 * Get Loan and Pay Loan
 * Reverse Transaction
+* Reset Password
+* Reset Pin
 
 **Models\**
 
@@ -18,34 +20,30 @@ User Model
 * email
 * phone number
 * password
+* balance
+* pin
 * otp
 * is_verified
 * created
 * updated
 
-Account Model
-
-* id
-* phonenumber
-* user -> Foreign Key to User Model
-* account_balance
-* loan
-* pin
-* created
-* updated
-
-Transaction Model
+Transfer History Model
 
 * id
 * amount
-* user -> Foreign Key to User Model
-* receipient
-* account
-* type
+* sender -> Foreign Key to User Model
+* receiver
 * created
 * updated
 
-Loan Model
+  With Draw History
+* id
+* amount
+* user
+* created_at
+* updated_at
+
+Loan History
 
 * id
 * amount
